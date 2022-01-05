@@ -162,6 +162,24 @@ void suffle(struct vecteur *tableau_de_vecteurs, int nbligne)
         tableau_de_vecteurs[i] = vecteur_tmp;
     }
 }
+/*
+struct vecteur suffle(struct vecteur *tableau_de_vecteurs, int nbligne)
+{
+    srand(time(0)); //set une nouvelle seed pour le random
+    struct vecteur tableau_de_vecteurs_shuffle[nbligne];
+    
+    struct vecteur vecteur_tmp;
+    int num = 0;
+    for (int i = 0; i < nbligne; i++)
+    {
+        num = (rand() % ((nbligne-1) - 0 + 1)) + 0;     //genere un nombre aléatoire si sera la futur position du vecteur courant
+        tableau_de_vecteurs_shuffle[i] = 
+        vecteur_tmp = tableau_de_vecteurs[num]; //changement de place des 2 vecteurs
+        tableau_de_vecteurs[num] = tableau_de_vecteurs[i];
+        tableau_de_vecteurs[i] = vecteur_tmp;
+    }
+}*/
+
 
 /*Calcule les moyennes en renvoyant un tableau de 4 valeurs qui corresponds au moyenne de chaque colonne*/
 
