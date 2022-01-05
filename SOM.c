@@ -58,11 +58,39 @@ int Rand_int(int min, int max)
     return nRand;
 }
 
+int getNBline()
+{
+    FILE *fp = fopen("iris.data", "r");
+    int ch = 0;
+    int lines = 0;
+    while (!feof(fp))
+    {
+        ch = fgetc(fp);
+        if (ch == '\n')
+        {
+            lines++;
+        }
+    }
+    fclose(fp);
+    return lines;
+}
+
+int getNBInTabFile()
+{
+    FILE *fp = fopen("iris.data", "r");
+    char chaine[50] = "";
+    const char *separators = ",";
+    fgets(chaine, 50, fp);
+    fclose(fp);
+    char *strToken = strtok(chaine, separators);
+    return strlen(strToken)+1;
+}
+
 /*-----------------------------FONCTIONS PRINCIPALES DE SOM----------------------------------*/
 
 /*Initialisation tu tableau de structure vecteur 150 vecteurs*/
 
-void init(struct vecteur *tableau_de_vecteurs)
+void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
 {
     FILE *fichier = NULL;
     char chaine[50] = "";         //chaine pour sortir les lignes du fichier Iris.data
@@ -81,12 +109,12 @@ void init(struct vecteur *tableau_de_vecteurs)
     {
         while (fgets(chaine, 50, fichier)) //recupere la chaine de caractere depuis iris.data
         {
-            tableau_de_vecteurs[i_vecteur].V = (double *)malloc(4 * sizeof(double));
+            tableau_de_vecteurs[i_vecteur].V = (double *)malloc(nbcolonne * sizeof(double));
             tableau_de_vecteurs[i_vecteur].etiquette = malloc(20 * sizeof(char));
             char *strToken = strtok(chaine, separators);
             while (strToken != NULL)
             {
-                if (i_tableau < 4)
+                if (i_tableau < nbcolonne)
                 {
                     tableau_de_vecteurs[i_vecteur].V[i_tableau] = atof(strToken);
                     i_tableau++;
@@ -108,11 +136,11 @@ void init(struct vecteur *tableau_de_vecteurs)
 
 /*Normalise les datas*/
 
-void normaliser(struct vecteur *tableau_de_vecteurs)
+void normaliser(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne)
 {
-    for (int i = 0; i < 150; i++)
+    for (int i = 0; i < nbligne; i++)
     {
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < nbcolonne; j++)
         {
             tableau_de_vecteurs[i].V[j] = tableau_de_vecteurs[i].V[j] / tableau_de_vecteurs[i].module;
         }
@@ -121,14 +149,14 @@ void normaliser(struct vecteur *tableau_de_vecteurs)
 
 /*Melange les datas*/
 
-void suffle(struct vecteur *tableau_de_vecteurs)
+void suffle(struct vecteur *tableau_de_vecteurs, int nbligne)
 {
     srand(time(0)); //set une nouvelle seed pour le random
     struct vecteur vecteur_tmp;
     int num = 0;
-    for (int i = 0; i < 150; i++)
+    for (int i = 0; i < nbligne; i++)
     {
-        num = (rand() % (149 - 0 + 1)) + 0;     //genere un nombre aléatoire si sera la futur position du vecteur courant
+        num = (rand() % ((nbligne-1) - 0 + 1)) + 0;     //genere un nombre aléatoire si sera la futur position du vecteur courant
         vecteur_tmp = tableau_de_vecteurs[num]; //changement de place des 2 vecteurs
         tableau_de_vecteurs[num] = tableau_de_vecteurs[i];
         tableau_de_vecteurs[i] = vecteur_tmp;
@@ -137,23 +165,23 @@ void suffle(struct vecteur *tableau_de_vecteurs)
 
 /*Calcule les moyennes en renvoyant un tableau de 4 valeurs qui corresponds au moyenne de chaque colonne*/
 
-double *moyennes_col(struct vecteur *tableau_de_vecteurs)
+double *moyennes_col(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne)
 {
-    double *tab = (double *)calloc(4, sizeof(double));
-    for (int j = 0; j < 4; j++)
+    double *tab = (double *)calloc(nbcolonne, sizeof(double));
+    for (int j = 0; j < nbcolonne; j++)
     {
-        for (int i = 0; i < 150; i++)
+        for (int i = 0; i < nbligne; i++)
         {
             tab[j] += tableau_de_vecteurs[i].V[j];
         }
-        tab[j] = tab[j] / 150;
+        tab[j] = tab[j] / nbligne;
     }
     return tab;
 }
 
 /*Configure le reseau, set les infos dans la structure qui est en parametre, genere une matrice avec allocation memoire de node, et remplis les nodes avec la moyenne des colonnes*/
 
-void config_reseau(struct N_Config *Reseau, double *tab)
+void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne)
 {
     Reseau->nb_lignes = 10;                                     //nombre de lignes
     Reseau->nb_colonnes = 6;                                    //nombre de colonnes
@@ -172,10 +200,10 @@ void config_reseau(struct N_Config *Reseau, double *tab)
 
         for (int j = 0; j < Reseau->nb_colonnes; j++)
         {
-            matrice[i][j].w = (double *)malloc(4 * sizeof(double)); //allocation du tableau de valeur
+            matrice[i][j].w = (double *)malloc(nbcolonne * sizeof(double)); //allocation du tableau de valeur
             matrice[i][j].id = malloc(sizeof(char));
 
-            for (int k = 0; k < 4; k++)
+            for (int k = 0; k < nbcolonne; k++)
             {
                 matrice[i][j].w[k] = RandDouble((tab[k] - 0.05), (tab[k] + 0.05)); //genere une valeur aléatoire et la met dans le tableau du node
             }
@@ -190,7 +218,7 @@ void config_reseau(struct N_Config *Reseau, double *tab)
 
 /*Recherche du BMU en fonction du vecteur courant*/
 
-void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int id_vecteur)
+void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int id_vecteur, int nbcolonne)
 
 {
     struct bmu *cell, *tete;
@@ -205,7 +233,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
         for (int u = 0; u < Reseau->nb_colonnes; u++)
         {
             Reseau->map[k][u].act = 0;
-            for (int i = 0; i < 4; i++) //calcule la distance
+            for (int i = 0; i < nbcolonne; i++) //calcule la distance
             {
                 Reseau->map[k][u].act += pow(tableau_de_vecteurs[id_vecteur].V[i] - Reseau->map[k][u].w[i], 2);
             }
@@ -241,7 +269,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
 struct bmu *bmu_aleatoire(struct N_Config *Reseau)
 {
     struct bmu *tmp = Reseau->bmu;
-    for (int i = 1; i < Rand_int(1,Reseau->nbBMU); i++) //for qui s'arrete au nombre random généré avec le nombre de bmu
+    for (int i = 1; i < Rand_int(1, Reseau->nbBMU); i++) //for qui s'arrete au nombre random généré avec le nombre de bmu
     {
         tmp = tmp->next;
     }
@@ -251,7 +279,7 @@ struct bmu *bmu_aleatoire(struct N_Config *Reseau)
 
 /*Fonction qui fait la propagation du voisinage*/
 
-void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, int degre)
+void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, int degre, int nbcolonne)
 {
 
     struct bmu *bmuSelectionne;
@@ -279,7 +307,7 @@ void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, in
         {
             if (((i >= 0) & (i <= Reseau->nb_lignes - 1)) & ((j >= 0) & (j <= Reseau->nb_colonnes - 1))) //Si les id rentre dans a matrice
             {
-                for (int u = 0; u < 4; u++) //change la valeur des poids
+                for (int u = 0; u < nbcolonne; u++) //change la valeur des poids
                 {
                     Reseau->map[i][j].w[u] = Reseau->map[i][j].w[u] + alpha * (Vecteur.V[u] - Reseau->map[i][j].w[u]);
                 }
@@ -288,7 +316,7 @@ void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, in
     }
 }
 
-void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs)
+void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne)
 
 {
     int Ttotal = 500;
@@ -301,22 +329,22 @@ void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs)
 
     while (i < 2000)
     {
-        if ((interation == val_chang_deg) & (degre > 1))//baisse la taille du degre
+        if ((interation == val_chang_deg) & (degre > 1)) //baisse la taille du degre
         {
             degre = degre - 1;
         }
-        if (i == 500)//change de phase
+        if (i == 500) //change de phase
         {
             interation = 0;
             Ttotal = 1500;
             alphaInit = 0.07;
         }
         alpha = alphaInit * (1 - (double)interation / Ttotal);
-        suffle(tableau_de_vecteurs);
-        for (int j = 0; j < 150; j++) //parcoures tableau de vecteurs
+        suffle(tableau_de_vecteurs, nbligne);
+        for (int j = 0; j < nbligne; j++) //parcoures tableau de vecteurs
         {
-            cherche_BMU(Reseau, tableau_de_vecteurs, j); //cherche le bmu avec le vecteur[j]
-            voisinage(Reseau, tableau_de_vecteurs[j], alpha, degre);
+            cherche_BMU(Reseau, tableau_de_vecteurs, j, nbcolonne); //cherche le bmu avec le vecteur[j]
+            voisinage(Reseau, tableau_de_vecteurs[j], alpha, degre, nbcolonne);
         }
         i++;
         interation++;
@@ -327,9 +355,9 @@ void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs)
 
 /*Libere la mémoire alloué pour le tableau de vecteurs*/
 
-void liberer_le_tableau(struct vecteur *tableau_de_vecteurs)
+void liberer_le_tableau(struct vecteur *tableau_de_vecteurs, int nbligne)
 {
-    for (int i = 0; i < 150; i++)
+    for (int i = 0; i < nbligne; i++)
     {
         free(tableau_de_vecteurs[i].V);
         free(tableau_de_vecteurs[i].etiquette);
@@ -359,12 +387,12 @@ void liberer_la_matrice(struct N_Config *Reseau)
 
 /*Affichage du tableau de vecteurs*/
 
-void affiche_tableau_vecteur(struct vecteur *tableau_de_vecteurs)
+void affiche_tableau_vecteur(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne)
 {
-    for (int i = 0; i < 150; i++)
+    for (int i = 0; i < nbligne; i++)
     {
         printf("Vecteur %d | Module : %f | Espece : %s | Tableau ", i, tableau_de_vecteurs[i].module, tableau_de_vecteurs[i].etiquette);
-        for (int j = 0; j < 4; j++)
+        for (int j = 0; j < nbcolonne; j++)
         {
             printf("%f | ", tableau_de_vecteurs[i].V[j]);
         }
@@ -428,26 +456,28 @@ int main()
 
 {
 
-    struct vecteur tableau_de_vecteurs[150];
+    int nbligne = getNBline();
+    int nbcolonne = getNBInTabFile();
+    struct vecteur tableau_de_vecteurs[nbligne];
 
-    double *tabMoyenne = (double *)malloc(4 * sizeof(double)); // Init en mémoire le tableau de moyenne
+    double *tabMoyenne = (double *)malloc(nbcolonne * sizeof(double)); // Init en mémoire le tableau de moyenne
 
     struct N_Config *mon_reseau = malloc(sizeof(struct N_Config)); // Init en mémoire le reseau
 
-    init(tableau_de_vecteurs);       //Recupere les valeurs de iris.data
-    normaliser(tableau_de_vecteurs); //Normalise ces valeurs
-    suffle(tableau_de_vecteurs);     //Melanger ces valeurs
+    init(tableau_de_vecteurs, nbcolonne);       //Recupere les valeurs de iris.data
+    normaliser(tableau_de_vecteurs, nbligne, nbcolonne); //Normalise ces valeurs
+    suffle(tableau_de_vecteurs, nbligne);     //Melanger ces valeurs
 
-    tabMoyenne = moyennes_col(tableau_de_vecteurs); //Fait la moyenne des colonnes
+    tabMoyenne = moyennes_col(tableau_de_vecteurs, nbligne, nbcolonne); //Fait la moyenne des colonnes
 
-    config_reseau(mon_reseau, tabMoyenne); //Configure le reseau de node
+    config_reseau(mon_reseau, tabMoyenne, nbcolonne); //Configure le reseau de node
 
-    apprentissage(mon_reseau, tableau_de_vecteurs); //Fonction d'apprentissage
+    apprentissage(mon_reseau, tableau_de_vecteurs, nbligne, nbcolonne); //Fonction d'apprentissage
 
     afficheMatriceNode(mon_reseau);
 
     liberer_la_matrice(mon_reseau);
-    liberer_le_tableau(tableau_de_vecteurs);
+    liberer_le_tableau(tableau_de_vecteurs, nbligne);
 
     return 0;
 }
