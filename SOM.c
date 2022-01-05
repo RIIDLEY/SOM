@@ -332,6 +332,7 @@ void liberer_le_tableau(struct vecteur *tableau_de_vecteurs)
     for (int i = 0; i < 150; i++)
     {
         free(tableau_de_vecteurs[i].V);
+        free(tableau_de_vecteurs[i].etiquette);
     }
     printf("Memoire utilise par le tableau de vecteurs libere\n");
 }
