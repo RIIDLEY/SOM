@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -65,6 +66,11 @@ int Rand_int(int min, int max)
 int getNBline()
 {
     FILE *fp = fopen("iris.data", "r");
+    if (fp == NULL)
+    {
+        printf("Le fichier ne peut pas s'ouvrir\n");
+        exit(0);
+    }
     int ch = 0;
     int lines = 0;
     while (!feof(fp))//calcule le nombre de ligne dans le fichier
@@ -84,6 +90,11 @@ int getNBline()
 int getNBInTabFile()
 {
     FILE *fp = fopen("iris.data", "r");
+    if (fp == NULL)
+    {
+        printf("Le fichier ne peut pas s'ouvrir\n");
+        exit(0);
+    }
     char chaine[50] = "";
     const char *separators = ",";
     fgets(chaine, 50, fp);//get la premier ligne
@@ -128,11 +139,19 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
                 else
                 {
                     strcpy(tableau_de_vecteurs[i_vecteur].etiquette, strToken);
-                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0';
+                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0';//si pas de char de fin, l'algo prend pas toute les données
                 }
                 strToken = strtok(NULL, separators);
             }
-            tableau_de_vecteurs[i_vecteur].module = sqrt(pow(tableau_de_vecteurs[i_vecteur].V[0], 2) + pow(tableau_de_vecteurs[i_vecteur].V[1], 2) + pow(tableau_de_vecteurs[i_vecteur].V[2], 2) + pow(tableau_de_vecteurs[i_vecteur].V[3], 2));
+            //faire une boucle
+            tableau_de_vecteurs[i_vecteur].module = 0;
+            for (int i = 0; i < 4; i++)
+            {
+                tableau_de_vecteurs[i_vecteur].module += pow(tableau_de_vecteurs[i_vecteur].V[i], 2);
+            }         
+            tableau_de_vecteurs[i_vecteur].module = sqrt(tableau_de_vecteurs[i_vecteur].module);
+
+            //tableau_de_vecteurs[i_vecteur].module = sqrt(pow(tableau_de_vecteurs[i_vecteur].V[0], 2) + pow(tableau_de_vecteurs[i_vecteur].V[1], 2) + pow(tableau_de_vecteurs[i_vecteur].V[2], 2) + pow(tableau_de_vecteurs[i_vecteur].V[3], 2));
             i_tableau = 0;
             i_vecteur++;
         }
@@ -218,7 +237,7 @@ void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne, int nb_l
     Reseau->nb_lignes = nb_lignes_matrice;                                     //nombre de lignes
     Reseau->nb_colonnes = nb_colonnes_matrice;                                    //nombre de colonnes
     Reseau->nb_nodes = Reseau->nb_lignes * Reseau->nb_colonnes; //set le nombre de node
-    Reseau->nbBMU = 0;
+    Reseau->nbBMU = 0;//a verifier
 
     struct node **matrice = malloc(Reseau->nb_lignes * sizeof(struct node *));
 
@@ -259,7 +278,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
     cell->colonne = 0; //init un BMU initiale en 0,0
     cell->ligne = 0;
     Reseau->bmu = tete;
-    Reseau->nbBMU = 1;
+    Reseau->nbBMU = 0;
     for (int k = 0; k < Reseau->nb_lignes; k++)
     {
         for (int u = 0; u < Reseau->nb_colonnes; u++)
@@ -282,8 +301,9 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
                     cell = cell->next;
                     Reseau->nbBMU++;
                 }
-                if ((Reseau->map[k][u].act < Reseau->map[cell->ligne][cell->colonne].act)) //si plus petit, fait une nouvelle liste chaine
+                else //si plus petit, fait une nouvelle liste chaine // A retirer
                 {
+                    //Nettoyer la liste lors d'une nouvelle liste
                     cell = (struct bmu *)malloc(sizeof(struct bmu));
                     tete = cell;
                     cell->ligne = k;
@@ -337,7 +357,7 @@ void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, in
     {
         for (int j = bmuSelectionne->colonne - degre; j <= bmuSelectionne->colonne + degre; j++)
         {
-            if (((i >= 0) & (i <= Reseau->nb_lignes - 1)) & ((j >= 0) & (j <= Reseau->nb_colonnes - 1))) //Si les id rentre dans a matrice
+            if (((i >= 0) & (i < Reseau->nb_lignes)) & ((j >= 0) & (j < Reseau->nb_colonnes))) //Si les id rentre dans a matrice
             {
                 for (int u = 0; u < nbcolonne; u++) //change la valeur des poids
                 {
@@ -356,8 +376,8 @@ void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs,
     double alphaInit = 0.7;
     double alpha = 0;
     int i = 0;
-    int degre = 3;
-    int val_chang_deg = Ttotal / degre;
+    int degre = 3;// Modifier, à calculer
+    int val_chang_deg = Ttotal / degre; //environ 166
     int interation = 0;
 
     while (i < TtotalIteration)
@@ -487,7 +507,6 @@ void afficheMatriceNode(struct N_Config *Reseau)
 /*-----------------------------MAIN----------------------------------*/
 
 int main()
-
 {
 
     int nbligne = getNBline();//nombre de data
@@ -518,3 +537,6 @@ int main()
 
     return 0;
 }
+
+//Faire l'étiquettage de la map, apres avoir faire le voisinage
+
