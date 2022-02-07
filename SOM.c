@@ -73,7 +73,7 @@ int getNBline()
     }
     int ch = 0;
     int lines = 0;
-    while (!feof(fp))//calcule le nombre de ligne dans le fichier
+    while (!feof(fp)) //calcule le nombre de ligne dans le fichier
     {
         ch = fgetc(fp);
         if (ch == '\n')
@@ -97,9 +97,9 @@ int getNBInTabFile()
     }
     char chaine[50] = "";
     const char *separators = ",";
-    fgets(chaine, 50, fp);//get la premier ligne
+    fgets(chaine, 50, fp); //get la premier ligne
     fclose(fp);
-    char *strToken = strtok(chaine, separators);//separer les elements
+    char *strToken = strtok(chaine, separators); //separer les elements
     return strlen(strToken) + 1;
 }
 
@@ -139,7 +139,7 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
                 else
                 {
                     strcpy(tableau_de_vecteurs[i_vecteur].etiquette, strToken);
-                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0';//si pas de char de fin, l'algo prend pas toute les données
+                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0'; //si pas de char de fin, l'algo prend pas toute les données
                 }
                 strToken = strtok(NULL, separators);
             }
@@ -148,10 +148,9 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
             for (int i = 0; i < 4; i++)
             {
                 tableau_de_vecteurs[i_vecteur].module += pow(tableau_de_vecteurs[i_vecteur].V[i], 2);
-            }         
+            }
             tableau_de_vecteurs[i_vecteur].module = sqrt(tableau_de_vecteurs[i_vecteur].module);
 
-            //tableau_de_vecteurs[i_vecteur].module = sqrt(pow(tableau_de_vecteurs[i_vecteur].V[0], 2) + pow(tableau_de_vecteurs[i_vecteur].V[1], 2) + pow(tableau_de_vecteurs[i_vecteur].V[2], 2) + pow(tableau_de_vecteurs[i_vecteur].V[3], 2));
             i_tableau = 0;
             i_vecteur++;
         }
@@ -180,15 +179,15 @@ void shuffle_indice(int nbligne, int *tableau_indice, bool init)
     int id_tmp;
     int num = 0;
 
-    if (init == false)//si pas encore initialisé
+    if (init == false) //si pas encore initialisé
     {
-        for (int j = 0; j < nbligne; j++)//genere le tableau
+        for (int j = 0; j < nbligne; j++) //genere le tableau
         {
             tableau_indice[j] = j;
         }
     }
 
-    for (int i = 0; i < nbligne; i++)//melange les indices
+    for (int i = 0; i < nbligne; i++) //melange les indices
     {
         num = (rand() % ((nbligne - 1) - 0 + 1)) + 0; //genere un nombre aléatoire si sera la futur position du vecteur courant
         id_tmp = tableau_indice[num];                 //changement de place des 2 indices
@@ -234,10 +233,10 @@ double *moyennes_col(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcol
 
 void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne, int nb_lignes_matrice, int nb_colonnes_matrice)
 {
-    Reseau->nb_lignes = nb_lignes_matrice;                                     //nombre de lignes
-    Reseau->nb_colonnes = nb_colonnes_matrice;                                    //nombre de colonnes
+    Reseau->nb_lignes = nb_lignes_matrice;                      //nombre de lignes
+    Reseau->nb_colonnes = nb_colonnes_matrice;                  //nombre de colonnes
     Reseau->nb_nodes = Reseau->nb_lignes * Reseau->nb_colonnes; //set le nombre de node
-    Reseau->nbBMU = 0;//a verifier
+    Reseau->nbBMU = 0;                                          //a verifier
 
     struct node **matrice = malloc(Reseau->nb_lignes * sizeof(struct node *));
 
@@ -259,12 +258,24 @@ void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne, int nb_l
                 matrice[i][j].w[k] = RandDouble((tab[k] - 0.05), (tab[k] + 0.05)); //genere une valeur aléatoire et la met dans le tableau du node
             }
 
-            matrice[i][j].act = 10; //set la distance
+            matrice[i][j].act = 0; //set la distance
             matrice[i][j].id = "*"; //set l'id
         }
     }
 
     Reseau->map = matrice; //met la matrice dans la structure du reseau
+}
+
+/*Libere la mémoire alloué pour la liste chainée de bmu courant*/
+
+void liberer_liste_chaine(struct N_Config *Reseau){
+    struct bmu *tmp = NULL;
+    while (Reseau->bmu){
+        tmp = Reseau->bmu->next;//prend le bmu suivant pour le sauvegarder
+        free(Reseau->bmu);//free le bmu courant
+        Reseau->bmu=tmp;
+    }
+
 }
 
 /*Recherche du BMU en fonction du vecteur courant*/
@@ -301,9 +312,10 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
                     cell = cell->next;
                     Reseau->nbBMU++;
                 }
-                else //si plus petit, fait une nouvelle liste chaine // A retirer
+                else //si plus petit, fait une nouvelle liste chaine
                 {
                     //Nettoyer la liste lors d'une nouvelle liste
+                    liberer_liste_chaine(Reseau);
                     cell = (struct bmu *)malloc(sizeof(struct bmu));
                     tete = cell;
                     cell->ligne = k;
@@ -371,37 +383,88 @@ void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, in
 void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne, int *tableau_indice)
 
 {
-    int TtotalIteration = nbcolonne*500;
-    int Ttotal = TtotalIteration*25/100;
+    int TtotalIteration = (nbcolonne * 500);
+    int Ttotal = TtotalIteration * 25 / 100;
     double alphaInit = 0.7;
     double alpha = 0;
     int i = 0;
-    int degre = 3;// Modifier, à calculer
+    int degre = 3;                      // Modifier, à calculer
     int val_chang_deg = Ttotal / degre; //environ 166
-    int interation = 0;
-
+    int iteration = 0;
+    bool phasechange = false;
     while (i < TtotalIteration)
     {
-        if ((interation == val_chang_deg) & (degre > 1)) //baisse la taille du degre
+        if ((iteration == val_chang_deg) & (degre > 1)) //baisse la taille du degre
         {
             degre = degre - 1;
         }
-        if (i == Ttotal) //change de phase
+        if ((i == Ttotal) && (phasechange == false)) //change de phase
         {
-            interation = 0;
-            Ttotal = TtotalIteration*75/100;
+            iteration = 0;
+            Ttotal = TtotalIteration * 75 / 100;
             alphaInit = 0.07;
+            phasechange = true;
         }
-        alpha = alphaInit * (1 - (double)interation / Ttotal);
-        //shuffle(tableau_de_vecteurs, nbligne);
+        alpha = alphaInit * (1 - (double)iteration / Ttotal);
         shuffle_indice(nbligne, tableau_indice, true);
+
         for (int j = 0; j < nbligne; j++) //parcoures tableau de vecteurs
         {
             cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); //cherche le bmu avec le vecteur[j]
             voisinage(Reseau, tableau_de_vecteurs[tableau_indice[j]], alpha, degre, nbcolonne);
         }
         i++;
-        interation++;
+        iteration++;
+    }
+}
+
+/*Supprime toute les étiquettes*/
+
+void resetEtiquette(struct N_Config *Reseau)
+{
+    for (int k = 0; k < Reseau->nb_lignes; k++)
+    {
+        for (int u = 0; u < Reseau->nb_colonnes; u++)
+        {
+            Reseau->map[k][u].id = "*";
+        }
+    }
+}
+
+/*Ajoute une équitte à un bmu en fonction du vecteur courant*/
+
+void vote(struct N_Config *Reseau, struct vecteur Vecteur)
+{
+
+    struct bmu *bmuSelectionne;
+
+    bmuSelectionne = Reseau->bmu;
+
+    if (strcmp(Vecteur.etiquette, "Iris-setosa") == 0)
+    {
+        Reseau->map[bmuSelectionne->ligne][bmuSelectionne->colonne].id = "S";
+    }
+    if (strcmp(Vecteur.etiquette, "Iris-versicolor") == 0)
+    {
+        Reseau->map[bmuSelectionne->ligne][bmuSelectionne->colonne].id = "E";
+    }
+    if (strcmp(Vecteur.etiquette, "Iris-virginica") == 0)
+    {
+        Reseau->map[bmuSelectionne->ligne][bmuSelectionne->colonne].id = "I";
+    }
+}
+
+
+void etiquettage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne, int *tableau_indice)
+{
+
+    resetEtiquette(Reseau);
+    shuffle_indice(nbligne, tableau_indice, true);
+
+    for (int j = 0; j < nbligne; j++) //parcoures tableau de vecteurs
+    {
+        cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); //cherche le bmu avec le vecteur[j]
+        vote(Reseau, tableau_de_vecteurs[tableau_indice[j]]);
     }
 }
 
@@ -436,6 +499,7 @@ void liberer_la_matrice(struct N_Config *Reseau)
 
     printf("Memoire utilise par le reseau de nodes libere\n");
 }
+
 
 /*-----------------------------FONCTIONS D'AFFICHAGE----------------------------------*/
 
@@ -509,10 +573,10 @@ void afficheMatriceNode(struct N_Config *Reseau)
 int main()
 {
 
-    int nbligne = getNBline();//nombre de data
-    int nbcolonne = getNBInTabFile();//nombre de colonne dans les datas
-    struct vecteur tableau_de_vecteurs[nbligne];//tableau de datas
-    int tableau_indice[nbligne];//tableau d'indice
+    int nbligne = getNBline();                   //nombre de data
+    int nbcolonne = getNBInTabFile();            //nombre de colonne dans les datas
+    struct vecteur tableau_de_vecteurs[nbligne]; //tableau de datas
+    int tableau_indice[nbligne];                 //tableau d'indice
 
     double *tabMoyenne = (double *)malloc(nbcolonne * sizeof(double)); // Init en mémoire le tableau de moyenne
 
@@ -526,10 +590,16 @@ int main()
 
     tabMoyenne = moyennes_col(tableau_de_vecteurs, nbligne, nbcolonne); //Fait la moyenne des colonnes
 
-    config_reseau(mon_reseau, tabMoyenne, nbcolonne,10,6); //Configure le reseau de node
+    config_reseau(mon_reseau, tabMoyenne, nbcolonne, 10, 6); //Configure le reseau de node
 
     apprentissage(mon_reseau, tableau_de_vecteurs, nbligne, nbcolonne, tableau_indice); //Fonction d'apprentissage
 
+    printf("Matrice apres apprentissage : \n");
+    afficheMatriceNode(mon_reseau);
+
+    etiquettage(mon_reseau, tableau_de_vecteurs, nbligne, nbcolonne, tableau_indice);
+
+    printf("Matrice apres le vote : \n");
     afficheMatriceNode(mon_reseau);
 
     liberer_la_matrice(mon_reseau);
@@ -539,4 +609,3 @@ int main()
 }
 
 //Faire l'étiquettage de la map, apres avoir faire le voisinage
-
