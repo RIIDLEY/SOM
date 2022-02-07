@@ -605,5 +605,3 @@ int main()
 
     return 0;
 }
-
-// Faire l'étiquettage de la map, apres avoir faire le voisinage
