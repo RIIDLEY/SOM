@@ -17,25 +17,25 @@ struct vecteur
 
 struct node
 {
-    double *w;  //tableau de 4 valeurs
-    double act; //distance (vide au debut)
-    char *id;   //l'ID
+    double *w;  // tableau de 4 valeurs
+    double act; // distance (vide au debut)
+    char *id;   // l'ID
 };
 
 struct bmu
 {
     int ligne;
     int colonne;
-    struct bmu *next; //BMU suivant
+    struct bmu *next; // BMU suivant
 };
 
 struct N_Config
 {
-    int nb_nodes;      //nombre de noeuds
-    int nb_lignes;     //nombre de lignes
-    int nb_colonnes;   //nombre de colonnes
-    struct bmu *bmu;   //BMU
-    struct node **map; //Matrice de noeuds
+    int nb_nodes;      // nombre de noeuds
+    int nb_lignes;     // nombre de lignes
+    int nb_colonnes;   // nombre de colonnes
+    struct bmu *bmu;   // BMU
+    struct node **map; // Matrice de noeuds
     int nbBMU;
 };
 
@@ -73,7 +73,7 @@ int getNBline()
     }
     int ch = 0;
     int lines = 0;
-    while (!feof(fp)) //calcule le nombre de ligne dans le fichier
+    while (!feof(fp)) // calcule le nombre de ligne dans le fichier
     {
         ch = fgetc(fp);
         if (ch == '\n')
@@ -97,9 +97,9 @@ int getNBInTabFile()
     }
     char chaine[50] = "";
     const char *separators = ",";
-    fgets(chaine, 50, fp); //get la premier ligne
+    fgets(chaine, 50, fp); // get la premier ligne
     fclose(fp);
-    char *strToken = strtok(chaine, separators); //separer les elements
+    char *strToken = strtok(chaine, separators); // separer les elements
     return strlen(strToken) + 1;
 }
 
@@ -110,8 +110,8 @@ int getNBInTabFile()
 void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
 {
     FILE *fichier = NULL;
-    char chaine[50] = "";         //chaine pour sortir les lignes du fichier Iris.data
-    const char *separators = ","; //pour determiner la séparation dans le chaine de caractere
+    char chaine[50] = "";         // chaine pour sortir les lignes du fichier Iris.data
+    const char *separators = ","; // pour determiner la séparation dans le chaine de caractere
     int i_vecteur = 0;
     int i_tableau = 0;
     fichier = fopen("iris.data", "r");
@@ -124,7 +124,7 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
 
     if (fichier != NULL)
     {
-        while (fgets(chaine, 50, fichier)) //recupere la chaine de caractere depuis iris.data
+        while (fgets(chaine, 50, fichier)) // recupere la chaine de caractere depuis iris.data
         {
             tableau_de_vecteurs[i_vecteur].V = (double *)malloc(nbcolonne * sizeof(double));
             tableau_de_vecteurs[i_vecteur].etiquette = malloc(20 * sizeof(char));
@@ -139,11 +139,11 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
                 else
                 {
                     strcpy(tableau_de_vecteurs[i_vecteur].etiquette, strToken);
-                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0'; //si pas de char de fin, l'algo prend pas toute les données
+                    tableau_de_vecteurs[i_vecteur].etiquette[strlen(tableau_de_vecteurs[i_vecteur].etiquette) - 1] = '\0'; // si pas de char de fin, l'algo prend pas toute les données
                 }
                 strToken = strtok(NULL, separators);
             }
-            //faire une boucle
+            // faire une boucle
             tableau_de_vecteurs[i_vecteur].module = 0;
             for (int i = 0; i < 4; i++)
             {
@@ -175,22 +175,22 @@ void normaliser(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne)
 
 void shuffle_indice(int nbligne, int *tableau_indice, bool init)
 {
-    srand(time(0)); //set une nouvelle seed pour le random
+    srand(time(0)); // set une nouvelle seed pour le random
     int id_tmp;
     int num = 0;
 
-    if (init == false) //si pas encore initialisé
+    if (init == false) // si pas encore initialisé
     {
-        for (int j = 0; j < nbligne; j++) //genere le tableau
+        for (int j = 0; j < nbligne; j++) // genere le tableau
         {
             tableau_indice[j] = j;
         }
     }
 
-    for (int i = 0; i < nbligne; i++) //melange les indices
+    for (int i = 0; i < nbligne; i++) // melange les indices
     {
-        num = (rand() % ((nbligne - 1) - 0 + 1)) + 0; //genere un nombre aléatoire si sera la futur position du vecteur courant
-        id_tmp = tableau_indice[num];                 //changement de place des 2 indices
+        num = (rand() % ((nbligne - 1) - 0 + 1)) + 0; // genere un nombre aléatoire si sera la futur position du vecteur courant
+        id_tmp = tableau_indice[num];                 // changement de place des 2 indices
         tableau_indice[num] = tableau_indice[i];
         tableau_indice[i] = id_tmp;
     }
@@ -233,10 +233,10 @@ double *moyennes_col(struct vecteur *tableau_de_vecteurs, int nbligne, int nbcol
 
 void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne, int nb_lignes_matrice, int nb_colonnes_matrice)
 {
-    Reseau->nb_lignes = nb_lignes_matrice;                      //nombre de lignes
-    Reseau->nb_colonnes = nb_colonnes_matrice;                  //nombre de colonnes
-    Reseau->nb_nodes = Reseau->nb_lignes * Reseau->nb_colonnes; //set le nombre de node
-    Reseau->nbBMU = 0;                                          //a verifier
+    Reseau->nb_lignes = nb_lignes_matrice;                      // nombre de lignes
+    Reseau->nb_colonnes = nb_colonnes_matrice;                  // nombre de colonnes
+    Reseau->nb_nodes = Reseau->nb_lignes * Reseau->nb_colonnes; // set le nombre de node
+    Reseau->nbBMU = 0;                                          // a verifier
 
     struct node **matrice = malloc(Reseau->nb_lignes * sizeof(struct node *));
 
@@ -250,32 +250,33 @@ void config_reseau(struct N_Config *Reseau, double *tab, int nbcolonne, int nb_l
 
         for (int j = 0; j < Reseau->nb_colonnes; j++)
         {
-            matrice[i][j].w = (double *)malloc(nbcolonne * sizeof(double)); //allocation du tableau de valeur
+            matrice[i][j].w = (double *)malloc(nbcolonne * sizeof(double)); // allocation du tableau de valeur
             matrice[i][j].id = malloc(sizeof(char));
 
             for (int k = 0; k < nbcolonne; k++)
             {
-                matrice[i][j].w[k] = RandDouble((tab[k] - 0.05), (tab[k] + 0.05)); //genere une valeur aléatoire et la met dans le tableau du node
+                matrice[i][j].w[k] = RandDouble((tab[k] - 0.05), (tab[k] + 0.05)); // genere une valeur aléatoire et la met dans le tableau du node
             }
 
-            matrice[i][j].act = 0; //set la distance
-            matrice[i][j].id = "*"; //set l'id
+            matrice[i][j].act = 0;  // set la distance
+            matrice[i][j].id = "*"; // set l'id
         }
     }
 
-    Reseau->map = matrice; //met la matrice dans la structure du reseau
+    Reseau->map = matrice; // met la matrice dans la structure du reseau
 }
 
 /*Libere la mémoire alloué pour la liste chainée de bmu courant*/
 
-void liberer_liste_chaine(struct N_Config *Reseau){
+void liberer_liste_chaine(struct N_Config *Reseau)
+{
     struct bmu *tmp = NULL;
-    while (Reseau->bmu){
-        tmp = Reseau->bmu->next;//prend le bmu suivant pour le sauvegarder
-        free(Reseau->bmu);//free le bmu courant
-        Reseau->bmu=tmp;
+    while (Reseau->bmu)
+    {
+        tmp = Reseau->bmu->next; // prend le bmu suivant pour le sauvegarder
+        free(Reseau->bmu);       // free le bmu courant
+        Reseau->bmu = tmp;
     }
-
 }
 
 /*Recherche du BMU en fonction du vecteur courant*/
@@ -286,7 +287,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
     struct bmu *cell, *tete;
     cell = (struct bmu *)malloc(sizeof(struct bmu));
     tete = cell;
-    cell->colonne = 0; //init un BMU initiale en 0,0
+    cell->colonne = 0; // init un BMU initiale en 0,0
     cell->ligne = 0;
     Reseau->bmu = tete;
     Reseau->nbBMU = 0;
@@ -295,7 +296,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
         for (int u = 0; u < Reseau->nb_colonnes; u++)
         {
             Reseau->map[k][u].act = 0;
-            for (int i = 0; i < nbcolonne; i++) //calcule la distance
+            for (int i = 0; i < nbcolonne; i++) // calcule la distance
             {
                 Reseau->map[k][u].act += pow(tableau_de_vecteurs[id_vecteur].V[i] - Reseau->map[k][u].w[i], 2);
             }
@@ -303,7 +304,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
 
             if (Reseau->map[k][u].act <= Reseau->map[cell->ligne][cell->colonne].act)
             {
-                if ((Reseau->map[k][u].act == Reseau->map[cell->ligne][cell->colonne].act)) //si la distance est egale au bmu actuel, ajouter dans la liste chaine
+                if ((Reseau->map[k][u].act == Reseau->map[cell->ligne][cell->colonne].act)) // si la distance est egale au bmu actuel, ajouter dans la liste chaine
                 {
                     cell->next = (struct bmu *)malloc(sizeof(struct bmu));
                     cell->next->ligne = k;
@@ -312,9 +313,9 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
                     cell = cell->next;
                     Reseau->nbBMU++;
                 }
-                else //si plus petit, fait une nouvelle liste chaine
+                else // si plus petit, fait une nouvelle liste chaine
                 {
-                    //Nettoyer la liste lors d'une nouvelle liste
+                    // Nettoyer la liste lors d'une nouvelle liste
                     liberer_liste_chaine(Reseau);
                     cell = (struct bmu *)malloc(sizeof(struct bmu));
                     tete = cell;
@@ -333,7 +334,7 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
 struct bmu *bmu_aleatoire(struct N_Config *Reseau)
 {
     struct bmu *tmp = Reseau->bmu;
-    for (int i = 1; i < Rand_int(1, Reseau->nbBMU); i++) //for qui s'arrete au nombre random généré avec le nombre de bmu
+    for (int i = 1; i < Rand_int(1, Reseau->nbBMU); i++) // for qui s'arrete au nombre random généré avec le nombre de bmu
     {
         tmp = tmp->next;
     }
@@ -365,13 +366,13 @@ void voisinage(struct N_Config *Reseau, struct vecteur Vecteur, double alpha, in
         Reseau->map[bmuSelectionne->ligne][bmuSelectionne->colonne].id = "I";
     }
 
-    for (int i = bmuSelectionne->ligne - degre; i <= bmuSelectionne->ligne + degre; i++) //parcours le voisinage au tour du BMU
+    for (int i = bmuSelectionne->ligne - degre; i <= bmuSelectionne->ligne + degre; i++) // parcours le voisinage au tour du BMU
     {
         for (int j = bmuSelectionne->colonne - degre; j <= bmuSelectionne->colonne + degre; j++)
         {
-            if (((i >= 0) & (i < Reseau->nb_lignes)) & ((j >= 0) & (j < Reseau->nb_colonnes))) //Si les id rentre dans a matrice
+            if (((i >= 0) & (i < Reseau->nb_lignes)) & ((j >= 0) & (j < Reseau->nb_colonnes))) // Si les id rentre dans a matrice
             {
-                for (int u = 0; u < nbcolonne; u++) //change la valeur des poids
+                for (int u = 0; u < nbcolonne; u++) // change la valeur des poids
                 {
                     Reseau->map[i][j].w[u] = Reseau->map[i][j].w[u] + alpha * (Vecteur.V[u] - Reseau->map[i][j].w[u]);
                 }
@@ -389,16 +390,16 @@ void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs,
     double alpha = 0;
     int i = 0;
     int degre = 3;                      // Modifier, à calculer
-    int val_chang_deg = Ttotal / degre; //environ 166
+    int val_chang_deg = Ttotal / degre; // environ 166
     int iteration = 0;
     bool phasechange = false;
     while (i < TtotalIteration)
     {
-        if ((iteration == val_chang_deg) & (degre > 1)) //baisse la taille du degre
+        if ((iteration == val_chang_deg) & (degre > 1)) // baisse la taille du degre
         {
             degre = degre - 1;
         }
-        if ((i == Ttotal) && (phasechange == false)) //change de phase
+        if ((i == Ttotal) && (phasechange == false)) // change de phase
         {
             iteration = 0;
             Ttotal = TtotalIteration * 75 / 100;
@@ -408,9 +409,9 @@ void apprentissage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs,
         alpha = alphaInit * (1 - (double)iteration / Ttotal);
         shuffle_indice(nbligne, tableau_indice, true);
 
-        for (int j = 0; j < nbligne; j++) //parcoures tableau de vecteurs
+        for (int j = 0; j < nbligne; j++) // parcoures tableau de vecteurs
         {
-            cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); //cherche le bmu avec le vecteur[j]
+            cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); // cherche le bmu avec le vecteur[j]
             voisinage(Reseau, tableau_de_vecteurs[tableau_indice[j]], alpha, degre, nbcolonne);
         }
         i++;
@@ -454,16 +455,15 @@ void vote(struct N_Config *Reseau, struct vecteur Vecteur)
     }
 }
 
-
 void etiquettage(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, int nbligne, int nbcolonne, int *tableau_indice)
 {
 
     resetEtiquette(Reseau);
     shuffle_indice(nbligne, tableau_indice, true);
 
-    for (int j = 0; j < nbligne; j++) //parcoures tableau de vecteurs
+    for (int j = 0; j < nbligne; j++) // parcoures tableau de vecteurs
     {
-        cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); //cherche le bmu avec le vecteur[j]
+        cherche_BMU(Reseau, tableau_de_vecteurs, tableau_indice[j], nbcolonne); // cherche le bmu avec le vecteur[j]
         vote(Reseau, tableau_de_vecteurs[tableau_indice[j]]);
     }
 }
@@ -499,7 +499,6 @@ void liberer_la_matrice(struct N_Config *Reseau)
 
     printf("Memoire utilise par le reseau de nodes libere\n");
 }
-
 
 /*-----------------------------FONCTIONS D'AFFICHAGE----------------------------------*/
 
@@ -573,26 +572,26 @@ void afficheMatriceNode(struct N_Config *Reseau)
 int main()
 {
 
-    int nbligne = getNBline();                   //nombre de data
-    int nbcolonne = getNBInTabFile();            //nombre de colonne dans les datas
-    struct vecteur tableau_de_vecteurs[nbligne]; //tableau de datas
-    int tableau_indice[nbligne];                 //tableau d'indice
+    int nbligne = getNBline();                   // nombre de data
+    int nbcolonne = getNBInTabFile();            // nombre de colonne dans les datas
+    struct vecteur tableau_de_vecteurs[nbligne]; // tableau de datas
+    int tableau_indice[nbligne];                 // tableau d'indice
 
     double *tabMoyenne = (double *)malloc(nbcolonne * sizeof(double)); // Init en mémoire le tableau de moyenne
 
     struct N_Config *mon_reseau = malloc(sizeof(struct N_Config)); // Init en mémoire le reseau
 
-    init(tableau_de_vecteurs, nbcolonne);                //Recupere les valeurs de iris.data
-    normaliser(tableau_de_vecteurs, nbligne, nbcolonne); //Normalise ces valeurs
-    //shuffle(tableau_de_vecteurs, nbligne);                //Melanger ces valeurs
+    init(tableau_de_vecteurs, nbcolonne);                // Recupere les valeurs de iris.data
+    normaliser(tableau_de_vecteurs, nbligne, nbcolonne); // Normalise ces valeurs
+    // shuffle(tableau_de_vecteurs, nbligne);                //Melanger ces valeurs
 
-    shuffle_indice(nbligne, tableau_indice, false); //Melange le tableau d'indice
+    shuffle_indice(nbligne, tableau_indice, false); // Melange le tableau d'indice
 
-    tabMoyenne = moyennes_col(tableau_de_vecteurs, nbligne, nbcolonne); //Fait la moyenne des colonnes
+    tabMoyenne = moyennes_col(tableau_de_vecteurs, nbligne, nbcolonne); // Fait la moyenne des colonnes
 
-    config_reseau(mon_reseau, tabMoyenne, nbcolonne, 10, 6); //Configure le reseau de node
+    config_reseau(mon_reseau, tabMoyenne, nbcolonne, 10, 6); // Configure le reseau de node
 
-    apprentissage(mon_reseau, tableau_de_vecteurs, nbligne, nbcolonne, tableau_indice); //Fonction d'apprentissage
+    apprentissage(mon_reseau, tableau_de_vecteurs, nbligne, nbcolonne, tableau_indice); // Fonction d'apprentissage
 
     printf("Matrice apres apprentissage : \n");
     afficheMatriceNode(mon_reseau);
@@ -608,4 +607,4 @@ int main()
     return 0;
 }
 
-//Faire l'étiquettage de la map, apres avoir faire le voisinage
+// Faire l'étiquettage de la map, apres avoir faire le voisinage
