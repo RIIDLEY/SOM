@@ -143,7 +143,7 @@ void init(struct vecteur *tableau_de_vecteurs, int nbcolonne)
                 }
                 strToken = strtok(NULL, separators);
             }
-            // faire une boucle
+
             tableau_de_vecteurs[i_vecteur].module = 0;
             for (int i = 0; i < 4; i++)
             {
@@ -315,7 +315,6 @@ void cherche_BMU(struct N_Config *Reseau, struct vecteur *tableau_de_vecteurs, i
                 }
                 else // si plus petit, fait une nouvelle liste chaine
                 {
-                    // Nettoyer la liste lors d'une nouvelle liste
                     liberer_liste_chaine(Reseau);
                     cell = (struct bmu *)malloc(sizeof(struct bmu));
                     tete = cell;
